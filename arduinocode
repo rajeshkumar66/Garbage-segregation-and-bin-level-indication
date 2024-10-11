@@ -1,0 +1,36 @@
+#include <Arduino.h>
+#include <Servo.h>
+#define moisturePin A0   
+#define irSensorPin 11   
+#define servoPin 8
+Servo myservo;
+int previousState = LOW; 
+void setup() {
+  Serial.begin(9600);
+  pinMode(irSensorPin, INPUT); 
+  myservo.attach(servoPin);
+}
+void loop() {
+  int irSensorState = digitalRead(irSensorPin);
+  // Check if object is detected by IR sensor
+  if (irSensorState == HIGH && previousState == LOW) {
+    int moistureLevel = analogRead(moisturePin);
+    Serial.print("Object Detected, Moisture Level: ");
+    Serial.println(moistureLevel);
+   if (moistureLevel < 625) 
+      rotateServo(-90); 
+    } else {
+      rotateServo(90);
+    }
+    previousState = HIGH; 
+  } else if (irSensorState == LOW && previousState == HIGH) {
+    previousState = LOW;
+  }
+  delay(100); // Adjust delay as needed
+}
+void rotateServo(int angle) {
+  myservo.write(90 + angle); 
+  delay(1000); 
+  myservo.write(90); 
+  delay(1000);
+}
