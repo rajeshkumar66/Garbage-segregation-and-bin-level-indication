@@ -1,0 +1,58 @@
+#define BLYNK_TEMPLATE_ID "*********"
+#define BLYNK_TEMPLATE_NAME "*********"
+#include <Arduino.h>
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+#define triggerPin1 4
+#define echoPin1 16
+#define triggerPin2 26
+#define echoPin2 27
+char auth[] = "***********";
+char ssid[] = "*********";
+char pass[] = "*********";
+BlynkTimer timer;
+void setup() {
+  Serial.begin(9600);
+  pinMode(triggerPin1, OUTPUT);
+  pinMode(echoPin1, INPUT);                                       
+  pinMode(triggerPin2, OUTPUT);  
+  pinMode(echoPin2, INPUT);
+  // Connect to Wi-Fi
+  Serial.print("Connecting to Wi-Fi...");
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi connected");
+  Serial.println("Initializing Blynk...");
+  Blynk.begin(auth, ssid, pass);
+  if (!Blynk.connected()) {
+    Serial.println("Failed to connect to Blynk server!");
+  } else {
+    Serial.println("Blynk connected");
+  }
+  // Setup a function to run every second
+  timer.setInterval(1000L, sendSensorData);
+  Serial.println("Setup complete");
+}
+void loop() {
+  Blynk.run();
+  timer.run();
+}
+int measureDistance(int triggerPin, int echoPin) {
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+  long duration = pulseIn(echoPin, HIGH);
+  int distance = duration * 0.034 / 2;
+  return distance;
+void sendSensorData() {
+  int distance1 = measureDistance(triggerPin1, echoPin1);
+  int distance2 = measureDistance(triggerPin2, echoPin2);
+  Blynk.virtualWrite(V1, distance1); // Write distance of bin 1 to virtual pin V1
+  Blynk.virtualWrite(V2, distance2); // Write distance of bin 2 to virtual pin V2
+}
