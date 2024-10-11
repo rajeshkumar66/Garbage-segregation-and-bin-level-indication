@@ -33,7 +33,6 @@ void setup() {
   } else {
     Serial.println("Blynk connected");
   }
-  // Setup a function to run every second
   timer.setInterval(1000L, sendSensorData);
   Serial.println("Setup complete");
 }
